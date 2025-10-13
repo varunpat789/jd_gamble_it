@@ -1,3 +1,5 @@
+//James Dong
+
 const int ledPin1 = 8;
 const int ledPin2 = 7;
 const int ledPin3 = 6;
