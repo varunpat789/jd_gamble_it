@@ -1,4 +1,5 @@
-//James Dong
+// Varun Patel
+// James Dong
 // Jake Sullivan
 
 const int ledPin1 = 8;
