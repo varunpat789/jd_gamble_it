@@ -23,7 +23,7 @@ bool IMU::begin()
     if (error == 0)
     {
         update();
-        prev_accel_magnitude = getAccelMagnitude();
+        prev_accel_magnitude = get_accel_mag();
         return true;
     }
     return false;
