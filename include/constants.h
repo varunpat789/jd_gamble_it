@@ -17,6 +17,10 @@ enum State
 const int INIT_LIVES = 3;
 const int WIN_SCORE = 99;
 
+// SPEAKER
+const uint8_t SPEAKER_TX = 17;
+const uint8_t SPEAKER_RX = 16;
+
 // BUTTON & LIMIT SWITCH
 const uint8_t BUTTON_PIN = 35;
 const uint8_t LIMIT_SWITCH_PIN = 34;
@@ -41,8 +45,8 @@ const uint8_t STEP_2_DIR_PIN = 13;
 
 // DISPLAY
 const int LATCH_PIN = 2;
-const int CLOCK_PIN = 16;
-const int DATA_PIN = 17;
+const int CLOCK_PIN = 18;
+const int DATA_PIN = 19;
 
 const int DISPLAY_INTERVAL = 5000; // 5ms
 

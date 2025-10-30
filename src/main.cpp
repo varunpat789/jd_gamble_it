@@ -4,6 +4,7 @@
 #include "break_beam.h"
 #include "button.h"
 #include <stepper.h>
+#include <speaker.h>
 
 // ESP32-DevKitC V4
 
@@ -20,6 +21,11 @@ volatile int credit = 0;
 volatile int current_multiplexed_digit = 0;
 volatile int event_timer = 1000;
 
+// SPEAKER
+// const uint8_t SPEAKER_TX = 17;
+// const uint8_t SPEAKER_RX = 16;
+Speaker speaker(SPEAKER_TX, SPEAKER_RX);
+
 // SENSORS
 IMU imu(SHAKE_THRESH, IMU_DB);
 BreakBeam break_beam_0(BB_0_PIN, BB_DB);
@@ -34,6 +40,108 @@ Stepper stepper2(STEP_2_STEP_PIN, STEP_2_DIR_PIN);
 
 // DISPLAY TIMER & INTURRUPT
 hw_timer_t *score_timer = NULL;
+
+// FORWARD DECLARATIONS
+void IRAM_ATTR onTimer();
+void increment_score();
+bool is_game_won();
+bool is_game_over();
+void remove_life();
+void update_credit();
+void drop_coin();
+void activate_reels();
+void get_lever_state();
+void is_cash_out_pressed();
+void is_coin_inserted();
+int determine_coin_value();
+void coin_it();
+void spin_it();
+void cash_it();
+State choose_next_action();
+void audio();
+void init_next_command();
+void game_won();
+
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(LATCH_PIN, OUTPUT);
+  pinMode(CLOCK_PIN, OUTPUT);
+  pinMode(DATA_PIN, OUTPUT);
+
+  score_timer = timerBegin(0, 80, true);
+  timerAttachInterrupt(score_timer, &onTimer, true);
+  timerAlarmWrite(score_timer, DISPLAY_INTERVAL, true);
+  timerAlarmEnable(score_timer);
+
+  // INITIALIZE IMU
+  if (!imu.begin())
+  {
+    Serial.println("Failed to connect to imu");
+  }
+
+  Serial.println("Initialized game");
+
+  score = 0;
+  credit = 0;
+  lives_remaining = INIT_LIVES;
+  state = INITIALIZED;
+}
+
+void loop()
+{
+  imu.update();
+  if (imu.is_shaken())
+  {
+    Serial.println("SHAKE DETECTED");
+    increment_score();
+  }
+
+  if (button.detect())
+  {
+    Serial.println("BUTTON PRESSED");
+  }
+  if (limit_switch.detect())
+  {
+    Serial.println("LIMIT SWITCH PRESSED");
+  }
+
+  if (break_beam_0.detect())
+  {
+    Serial.println("BREAK DETECTED FROM 0");
+  }
+  
+  if (break_beam_1.detect())
+  {
+    Serial.println("BREAK DETECTED FROM 1");
+  }
+
+  // stepper0.step();
+  // stepper1.step();
+  // stepper2.step();
+
+  delay(100);
+
+  credit += 1;
+  score += 1;
+
+  if (score >= 100)
+  {
+    score = 0;
+    // game_won();
+  }
+  if (credit >= 1000)
+  {
+    credit = 0;
+    // game_won();
+  }
+
+  if (is_game_over())
+  {
+    Serial.println("GAME OVER!");
+  }
+}
 
 void IRAM_ATTR onTimer()
 {
@@ -150,78 +258,4 @@ void init_next_command()
 void game_won()
 {
   Serial.println("game won");
-}
-
-void setup()
-{
-  Serial.begin(9600);
-
-  pinMode(LATCH_PIN, OUTPUT);
-  pinMode(CLOCK_PIN, OUTPUT);
-  pinMode(DATA_PIN, OUTPUT);
-
-  score_timer = timerBegin(0, 80, true);
-  timerAttachInterrupt(score_timer, &onTimer, true);
-  timerAlarmWrite(score_timer, DISPLAY_INTERVAL, true);
-  timerAlarmEnable(score_timer);
-
-  // INITIALIZE IMU
-  if (!imu.begin())
-  {
-    Serial.println("Failed to connect to imu");
-  }
-
-  Serial.println("Initialized game");
-
-  score = 0;
-  credit = 0;
-  lives_remaining = INIT_LIVES;
-  state = INITIALIZED;
-}
-
-void loop()
-{
-  imu.update();
-  if (imu.is_shaken())
-  {
-    Serial.println("SHAKE DETECTED");
-    increment_score();
-  }
-
-  if (button.detect())
-  {
-    Serial.println("BUTTON PRESSED");
-  }
-  if (limit_switch.detect())
-  {
-    Serial.println("LIMIT SWITCH PRESSED");
-  }
-
-  if (break_beam_0.detect())
-  {
-    Serial.println("BREAK DETECTED FROM 0");
-  }
-  if (break_beam_1.detect())
-  {
-    Serial.println("BREAK DETECTED FROM 1");
-  }
-
-  stepper0.step();
-  stepper1.step();
-  stepper2.step();
-
-  delay(100);
-
-  // credit +=25;
-
-  if (score >= 100)
-  {
-    score = 0;
-    game_won();
-  }
-
-  if (is_game_over())
-  {
-    Serial.println("GAME OVER!");
-  }
 }
