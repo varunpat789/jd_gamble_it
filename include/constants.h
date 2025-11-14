@@ -11,6 +11,16 @@ enum State
     COIN_IT,
     SPIN_IT,
     CASH_IT,
+    SHAKE_IT,
+};
+
+enum Inputs
+{
+    LIMIT,
+    BUTTON,
+    BIG_BREAK_BEAM,
+    SMALL_BREAK_BEAM,
+    SHAKE
 };
 
 // GAME SETTINGS
@@ -42,6 +52,15 @@ const uint8_t STEP_1_STEP_PIN = 27;
 const uint8_t STEP_1_DIR_PIN = 14;
 const uint8_t STEP_2_STEP_PIN = 12;
 const uint8_t STEP_2_DIR_PIN = 13;
+
+// SERVO
+const uint8_t SERVO_PWM_PIN = 10;
+
+// LEDS
+const uint8_t LIFE_0_PIN = 10;
+const uint8_t LIFE_1_PIN = 10;
+const uint8_t LIFE_2_PIN = 10;
+
 
 // DISPLAY
 const int LATCH_PIN = 2;

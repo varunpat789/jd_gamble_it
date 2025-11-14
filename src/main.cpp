@@ -3,33 +3,29 @@
 #include "imu.h"
 #include "break_beam.h"
 #include "button.h"
-#include <stepper.h>
-#include <speaker.h>
+#include "stepper.h"
+#include "speaker.h"
+#include "servoController.h"
+#include "led.h"
+#include "display.h"
 
 // ESP32-DevKitC V4
 
-// IO STATES
-int spin_switch_state = 0;
-int cash_out_button_state = 0;
-
 // GAME VARIABLES
 int lives_remaining;
-State state = INITIALIZED;
-
+volatile State state = INITIALIZED;
+volatile int inputs[5] = {0, 0, 0, 0, 0};
 volatile int score = 0;
 volatile int credit = 0;
-volatile int current_multiplexed_digit = 0;
 volatile int event_timer = 1000;
 
 // SPEAKER
-// const uint8_t SPEAKER_TX = 17;
-// const uint8_t SPEAKER_RX = 16;
 Speaker speaker(SPEAKER_TX, SPEAKER_RX);
 
 // SENSORS
 IMU imu(SHAKE_THRESH, IMU_DB);
-BreakBeam break_beam_0(BB_0_PIN, BB_DB);
-BreakBeam break_beam_1(BB_1_PIN, BB_DB);
+BreakBeam big_break_beam(BB_0_PIN, BB_DB);
+BreakBeam small_break_beam(BB_1_PIN, BB_DB);
 Button button(BUTTON_PIN, BUTTON_DB);
 Button limit_switch(LIMIT_SWITCH_PIN, BUTTON_DB);
 
@@ -38,10 +34,18 @@ Stepper stepper0(STEP_0_STEP_PIN, STEP_0_DIR_PIN);
 Stepper stepper1(STEP_1_STEP_PIN, STEP_1_DIR_PIN);
 Stepper stepper2(STEP_2_STEP_PIN, STEP_2_DIR_PIN);
 
-// DISPLAY TIMER & INTURRUPT
+// SERVO
+ServoController servo(SERVO_PWM_PIN);
+
+// LED - LIVES
+LED life_0_led(LIFE_0_PIN);
+LED life_1_led(LIFE_1_PIN);
+LED life_2_led(LIFE_2_PIN);
+
+// DISPLAY TIMER INTURRUPT
+volatile int current_multiplexed_digit = 0;
 hw_timer_t *score_timer = NULL;
 
-// FORWARD DECLARATIONS
 void IRAM_ATTR onTimer();
 void increment_score();
 bool is_game_won();
@@ -52,8 +56,6 @@ void drop_coin();
 void activate_reels();
 void get_lever_state();
 void is_cash_out_pressed();
-void is_coin_inserted();
-int determine_coin_value();
 void coin_it();
 void spin_it();
 void cash_it();
@@ -61,6 +63,7 @@ State choose_next_action();
 void audio();
 void init_next_command();
 void game_won();
+void update_inputs();
 
 void setup()
 {
@@ -91,32 +94,6 @@ void setup()
 
 void loop()
 {
-  imu.update();
-  if (imu.is_shaken())
-  {
-    Serial.println("SHAKE DETECTED");
-    increment_score();
-  }
-
-  if (button.detect())
-  {
-    Serial.println("BUTTON PRESSED");
-  }
-  if (limit_switch.detect())
-  {
-    Serial.println("LIMIT SWITCH PRESSED");
-  }
-
-  if (break_beam_0.detect())
-  {
-    Serial.println("BREAK DETECTED FROM 0");
-  }
-  
-  if (break_beam_1.detect())
-  {
-    Serial.println("BREAK DETECTED FROM 1");
-  }
-
   // stepper0.step();
   // stepper1.step();
   // stepper2.step();
@@ -141,6 +118,52 @@ void loop()
   {
     Serial.println("GAME OVER!");
   }
+}
+
+void update_inputs()
+{
+  imu.update();
+
+  inputs[LIMIT] = limit_switch.detect();
+  inputs[BUTTON] = button.detect();
+  inputs[BIG_BREAK_BEAM] = big_break_beam.detect();
+  inputs[SMALL_BREAK_BEAM] = small_break_beam.detect();
+  inputs[SHAKE] = imu.is_shaken();
+}
+
+void log_inputs()
+{
+  bool any_inputs_detected = false;
+  if (inputs[SHAKE])
+  {
+    Serial.print("Shake, ");
+    any_inputs_detected = true;
+  }
+  if (inputs[BUTTON])
+  {
+    Serial.print("Button, ");
+    any_inputs_detected = true;
+  }
+  if (inputs[LIMIT])
+  {
+    Serial.print("Limit, ");
+    any_inputs_detected = true;
+  }
+  if (inputs[BIG_BREAK_BEAM])
+  {
+    Serial.print("Big BB, ");
+    any_inputs_detected = true;
+  }
+  if (inputs[SMALL_BREAK_BEAM])
+  {
+    Serial.print("Small BB, ");
+    any_inputs_detected = true;
+  }
+  if (!any_inputs_detected)
+  {
+    Serial.print("No inputs detected.");
+  }
+  Serial.println("");
 }
 
 void IRAM_ATTR onTimer()
@@ -199,7 +222,6 @@ void update_credit()
 
 void drop_coin() {}
 void activate_reels() {}
-void get_lever_state() {}
 void is_cash_out_pressed() {}
 void is_coin_inserted() {}
 int determine_coin_value() { return 1; }
