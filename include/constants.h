@@ -52,12 +52,12 @@ const double SHAKE_THRESH = 15000.0; // ms
 const uint8_t CASH_BUTTON_PIN = 45;   // IO4
 const uint8_t START_BUTTON_PIN = 21; // IO21
 const uint8_t LIMIT_SWITCH_PIN = 47; // IO47
-const unsigned long BUTTON_DB = 500; // ms
+const unsigned long BUTTON_DB = 50; // ms
 
 // BREAK BEAMS
 const uint8_t BB_0_PIN = 46;     // IO46 -> BB 0
 const uint8_t BB_1_PIN = 15;     // IO15 -> BB 1
-const unsigned long BB_DB = 500; // ms
+const unsigned long BB_DB = 50; // ms
 
 // STEPPERS
 const uint8_t STEP_0_STEP_PIN = 1;  // IO1 -> Driver A - Step

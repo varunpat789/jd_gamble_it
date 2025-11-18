@@ -7,8 +7,11 @@ class Button
 {
 private:
     uint8_t input_pin;
-    unsigned long debouce_interval = 500; // ms
-    unsigned long last_detect_time = 0;
+    unsigned long debounce_interval;
+    unsigned long lastDebounceTime;
+    bool lastPinReading;
+    bool debouncedState;
+    bool lastDebouncedState;
 
 public:
     Button(uint8_t _input_pin, unsigned long debounce);
