@@ -12,12 +12,15 @@ enum State
     SPIN_IT,
     CASH_IT,
     SHAKE_IT,
-    GAME_OVER
+    GAME_OVER,
+    NA
 };
 
 enum Response
 {
     CORRECT,
+    CORRECT_25,
+    CORRECT_5,
     INCORRECT,
     NONE
 };

@@ -43,22 +43,46 @@ void update_inputs()
     inputs[BIG_BREAK_BEAM] = big_break_beam.detect();
     inputs[SMALL_BREAK_BEAM] = small_break_beam.detect();
     inputs[SHAKE] = imu.is_shaken();
-
-    if (inputs[START_BUTTON])
-    {
-        Serial.println("Start Button");
-    }
 }
 
 void log_inputs()
 {
-    Serial.print("Inputs: ");
-    for (int i = 0; i < 5; i++)
+    bool any_inputs_detected = false;
+    if (inputs[SHAKE])
     {
-        Serial.print(inputs[i]);
-        Serial.print(" ");
+        Serial.println("Shake, ");
+        any_inputs_detected = true;
     }
-    Serial.println();
+    if (inputs[CASH_BUTTON])
+    {
+        Serial.println("Cash Button, ");
+        any_inputs_detected = true;
+    }
+    if (inputs[START_BUTTON])
+    {
+        Serial.println("Start Button, ");
+        any_inputs_detected = true;
+    }
+    if (inputs[LIMIT])
+    {
+        Serial.println("Limit, ");
+        any_inputs_detected = true;
+    }
+    if (inputs[BIG_BREAK_BEAM])
+    {
+        Serial.println("Big BB, ");
+        any_inputs_detected = true;
+    }
+    if (inputs[SMALL_BREAK_BEAM])
+    {
+        Serial.println("Small BB, ");
+        any_inputs_detected = true;
+    }
+    // if (!any_inputs_detected)
+    // {
+    //     Serial.print("No inputs detected.");
+    // }
+    // Serial.println("");
 }
 
 void drop_coin()

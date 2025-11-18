@@ -16,11 +16,14 @@ int lives_remaining;
 State current_state;
 State prev_state;
 volatile Response response = NONE;
-volatile int inputs[5] = {0, 0, 0, 0, 0};
+volatile int inputs[6] = {0, 0, 0, 0, 0, 0};
 volatile int score = 0;
 volatile int credit = 0;
 volatile int counter = 1;
 volatile int event_timer = 1000;
+
+unsigned long action_start_time = 0;
+const unsigned long ACTION_TIMEOUT = 3000;
 
 // SPEAKER
 Speaker speaker(SPEAKER_TX, SPEAKER_RX);
@@ -41,7 +44,7 @@ Stepper stepper2(STEP_2_STEP_PIN, STEP_2_DIR_PIN);
 // SERVO
 ServoController servo(SERVO_PWM_PIN);
 
-// LED - LIVES
+// LIFE LEDs
 LED life_0_led(LIFE_0_PIN);
 LED life_1_led(LIFE_1_PIN);
 LED life_2_led(LIFE_2_PIN);
@@ -65,7 +68,6 @@ void setup()
   timerAlarmWrite(score_timer, DISPLAY_INTERVAL, true);
   timerAlarmEnable(score_timer);
 
-  // Initialize IMU
   if (!imu.begin())
   {
     Serial.println("Failed to connect to imu");
@@ -82,13 +84,9 @@ void setup()
 
 void loop()
 {
-  life_0_led.enable();
-  life_1_led.enable();
-  life_2_led.enable();
+  current_state = updateStateMachine(current_state);
 
   update_inputs();
-
-  execute_states();
-
+  // log_inputs();
   delay(10);
 }

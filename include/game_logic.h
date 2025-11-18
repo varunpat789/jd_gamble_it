@@ -11,7 +11,7 @@
 #include "led.h"
 
 // State machine functions
-void execute_states();
+State execute_states();
 State choose_next_action();
 
 // Game action handlers
@@ -20,17 +20,10 @@ Response spin_it();
 Response cash_it();
 Response shake_it();
 
-// Game state checkers
-bool is_game_won();
-bool is_game_over();
-bool is_start_game();
-
 // Game state modifiers
-void increment_score();
-void remove_life();
-void update_credit();
-void init_next_command();
-void game_won();
+bool remove_life();
+State updateStateMachine(State currentState);
+const char *stateToString(State state);
 
 // Audio
 void audio();
@@ -40,7 +33,7 @@ extern int lives_remaining;
 extern State current_state;
 extern State prev_state;
 extern volatile Response response;
-extern volatile int inputs[5];
+extern volatile int inputs[6];
 extern volatile int score;
 extern volatile int credit;
 extern volatile int counter;
