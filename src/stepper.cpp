@@ -10,23 +10,23 @@ void Stepper::step()
 {
     digitalWrite(dir_pin, HIGH);
 
-    for (int x = 0; x < 200; x++)
-    {
-        digitalWrite(step_pin, HIGH);
-        delayMicroseconds(500);
-        digitalWrite(step_pin, LOW);
-        delayMicroseconds(500);
-    }
-    delay(1000);
-
+    // for (int x = 0; x < 200; x++)
+    // {
+    digitalWrite(step_pin, HIGH);
+    delayMicroseconds(500);
+    digitalWrite(step_pin, LOW);
+    delayMicroseconds(500);
+    // }
+    // delay(1000);
+}
+void Stepper::reverse_step()
+{
     digitalWrite(dir_pin, LOW);
 
-    for (int x = 0; x < 400; x++)
-    {
-        digitalWrite(step_pin, HIGH);
-        delayMicroseconds(500);
-        digitalWrite(step_pin, LOW);
-        delayMicroseconds(500);
-    }
-    delay(1000);
+    digitalWrite(step_pin, HIGH);
+    delayMicroseconds(500);
+    digitalWrite(step_pin, LOW);
+    delayMicroseconds(500);
+
+    // delay(1000);
 }

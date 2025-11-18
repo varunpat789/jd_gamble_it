@@ -11,6 +11,7 @@ private:
 public:
     LED(uint8_t _pin);
     void disable();
+    void enable();
 };
 
 #endif // LED_H

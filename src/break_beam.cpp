@@ -1,24 +1,22 @@
 #include "break_beam.h"
 
-BreakBeam::BreakBeam(uint8_t _detect_pin, unsigned long debounce) : detect_pin(_detect_pin), debouce_interval(debounce)
+BreakBeam::BreakBeam(uint8_t _detect_pin)
+    : detect_pin(_detect_pin)
 {
     pinMode(detect_pin, INPUT);
 }
 
 bool BreakBeam::detect()
 {
-    unsigned long current_time = millis();
+    bool current_state = !digitalRead(detect_pin); // true when beam is broken
 
-    if (current_time - last_detect_time < debouce_interval)
+    // Detect rising edge (beam just broke)
+    if (current_state && !last_state)
     {
-        return false;
+        last_state = true;
+        return true; // Coin detected!
     }
 
-    if (!digitalRead(detect_pin))
-    {
-        last_detect_time = current_time;
-        return true;
-    }
-
+    last_state = current_state;
     return false;
 }

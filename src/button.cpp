@@ -7,6 +7,7 @@ Button::Button(uint8_t _input_pin, unsigned long debounce) : input_pin(_input_pi
 
 bool Button::detect()
 {
+    return !digitalRead(input_pin);
     unsigned long current_time = millis();
 
     if (current_time - last_detect_time < debouce_interval)
@@ -14,7 +15,7 @@ bool Button::detect()
         return false;
     }
 
-    if (digitalRead(input_pin))
+    if (!digitalRead(input_pin))
     {
         last_detect_time = current_time;
         return true;

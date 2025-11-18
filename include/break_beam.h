@@ -7,12 +7,11 @@ class BreakBeam
 {
 private:
     uint8_t detect_pin;
-    unsigned long debouce_interval = 500; // ms
-    unsigned long last_detect_time = 0;
+    bool last_state = false;
 
 public:
-    BreakBeam(uint8_t _detect_pin, unsigned long debounce);
-    bool detect();
+    BreakBeam(uint8_t _detect_pin);
+    bool detect();  // Returns true once per coin passage
 };
 
 #endif // BREAK_BEAM_H

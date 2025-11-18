@@ -12,12 +12,21 @@ enum State
     SPIN_IT,
     CASH_IT,
     SHAKE_IT,
+    GAME_OVER
+};
+
+enum Response
+{
+    CORRECT,
+    INCORRECT,
+    NONE
 };
 
 enum Inputs
 {
     LIMIT,
-    BUTTON,
+    CASH_BUTTON,
+    START_BUTTON,
     BIG_BREAK_BEAM,
     SMALL_BREAK_BEAM,
     SHAKE
@@ -26,46 +35,50 @@ enum Inputs
 // GAME SETTINGS
 const int INIT_LIVES = 3;
 const int WIN_SCORE = 99;
+// const int MAX_TIME = 
+// const int MIN_TIME = 
 
 // SPEAKER
-const uint8_t SPEAKER_TX = 17;
-const uint8_t SPEAKER_RX = 16;
+const uint8_t SPEAKER_TX = 17; // GPIO17 (TX) -> RX
+const uint8_t SPEAKER_RX = 18; // GPIO18 (RX) -> TX
 
-// BUTTON & LIMIT SWITCH
-const uint8_t BUTTON_PIN = 35;
-const uint8_t LIMIT_SWITCH_PIN = 34;
-const unsigned long BUTTON_DB = 500; // ms
-
-// BREAK BEAMS
-const uint8_t BB_0_PIN = 32;
-const uint8_t BB_1_PIN = 33;
-const unsigned long BB_DB = 500; // ms
-
-// IMU
+// ACCELEROMETER (IMU)
+const uint8_t IMU_SDA_PIN = 8;       // GPIO08 (SDA) -> SDA
+const uint8_t IMU_SCL_PIN = 9;       // GPIO09 (SCL) -> SCL
 const unsigned long IMU_DB = 1000;   // ms
 const double SHAKE_THRESH = 15000.0; // ms
 
+// BUTTONS & LIMIT SWITCH
+const uint8_t CASH_BUTTON_PIN = 45;   // IO4
+const uint8_t START_BUTTON_PIN = 21; // IO21
+const uint8_t LIMIT_SWITCH_PIN = 47; // IO47
+const unsigned long BUTTON_DB = 500; // ms
+
+// BREAK BEAMS
+const uint8_t BB_0_PIN = 46;     // IO46 -> BB 0
+const uint8_t BB_1_PIN = 15;     // IO15 -> BB 1
+const unsigned long BB_DB = 500; // ms
+
 // STEPPERS
-const uint8_t STEP_0_STEP_PIN = 25;
-const uint8_t STEP_0_DIR_PIN = 26;
-const uint8_t STEP_1_STEP_PIN = 27;
-const uint8_t STEP_1_DIR_PIN = 14;
-const uint8_t STEP_2_STEP_PIN = 12;
-const uint8_t STEP_2_DIR_PIN = 13;
+const uint8_t STEP_0_STEP_PIN = 1;  // IO1 -> Driver A - Step
+const uint8_t STEP_0_DIR_PIN = 2;   // IO2 -> Driver A - Direction
+const uint8_t STEP_1_STEP_PIN = 38; // IO38 -> Driver B - Step
+const uint8_t STEP_1_DIR_PIN = 37;  // IO37 -> Driver B - Direction
+const uint8_t STEP_2_STEP_PIN = 36; // IO36 -> Driver C - Step
+const uint8_t STEP_2_DIR_PIN = 35;  // IO35 -> Driver C - Direction
 
 // SERVO
-const uint8_t SERVO_PWM_PIN = 10;
+const uint8_t SERVO_PWM_PIN = 7; // IO7 -> SERVO (PWM)
 
-// LEDS
-const uint8_t LIFE_0_PIN = 10;
-const uint8_t LIFE_1_PIN = 10;
-const uint8_t LIFE_2_PIN = 10;
-
+// LIFE LEDS
+const uint8_t LIFE_0_PIN = 4; // IO45 -> Life 1
+const uint8_t LIFE_1_PIN = 6;  // IO6 -> Life 2
+const uint8_t LIFE_2_PIN = 5;  // IO5 -> Life 3
 
 // DISPLAY
-const int LATCH_PIN = 2;
-const int CLOCK_PIN = 18;
-const int DATA_PIN = 19;
+const uint8_t LATCH_PIN = 20; // IO20 -> LATCH
+const uint8_t CLOCK_PIN = 3;  // IO3 -> CLK
+const uint8_t DATA_PIN = 19;  // IO19 -> DATA
 
 const int DISPLAY_INTERVAL = 5000; // 5ms
 

@@ -9,24 +9,27 @@
 #include "led.h"
 #include "display.h"
 
-// ESP32-DevKitC V4
-
 // GAME VARIABLES
 int lives_remaining;
-volatile State state = INITIALIZED;
+State state;
+volatile Response response = NONE;
 volatile int inputs[5] = {0, 0, 0, 0, 0};
 volatile int score = 0;
 volatile int credit = 0;
+volatile int counter = 1;
 volatile int event_timer = 1000;
+static State last_state = INITIALIZED;
 
 // SPEAKER
 Speaker speaker(SPEAKER_TX, SPEAKER_RX);
 
 // SENSORS
 IMU imu(SHAKE_THRESH, IMU_DB);
-BreakBeam big_break_beam(BB_0_PIN, BB_DB);
-BreakBeam small_break_beam(BB_1_PIN, BB_DB);
-Button button(BUTTON_PIN, BUTTON_DB);
+BreakBeam big_break_beam(BB_0_PIN);
+BreakBeam small_break_beam(BB_1_PIN);
+Button cash_button(CASH_BUTTON_PIN, BUTTON_DB);
+Button start_button(START_BUTTON_PIN, BUTTON_DB);
+
 Button limit_switch(LIMIT_SWITCH_PIN, BUTTON_DB);
 
 // STEPPERS
@@ -56,18 +59,28 @@ void drop_coin();
 void activate_reels();
 void get_lever_state();
 void is_cash_out_pressed();
-void coin_it();
-void spin_it();
-void cash_it();
+Response coin_it();
+Response spin_it();
+Response cash_it();
+Response shake_it();
 State choose_next_action();
 void audio();
 void init_next_command();
 void game_won();
 void update_inputs();
+void log_inputs();
+bool is_start_game();
+
+int classify_coin();
+int get_next_counter_value()
+{
+  return 0;
+}
 
 void setup()
 {
-  Serial.begin(9600);
+  // set up audio
+  Serial.begin(115200);
 
   pinMode(LATCH_PIN, OUTPUT);
   pinMode(CLOCK_PIN, OUTPUT);
@@ -97,35 +110,143 @@ void loop()
   // stepper0.step();
   // stepper1.step();
   // stepper2.step();
+  // speaker.play_first();
 
-  delay(100);
+  // Serial.println("BRO");
+  life_0_led.enable();
+  life_1_led.enable();
+  life_2_led.enable();
 
-  credit += 1;
-  score += 1;
+  update_inputs();
+  // log_inputs();
 
-  if (score >= 100)
+  delay(10);
+
+  // credit += 1;
+  // score += 1;
+
+  // if (score >= 100)
+  // {
+  //   score = 0;
+  //   // game_won();
+  // }
+  // if (credit >= 1000)
+  // {
+  //   credit = 0;
+  //   // game_won();
+  // }
+
+  // if (is_game_over())
+  // {
+  //   Serial.println("GAME OVER!");
+  // }
+
+  // GAME LOGIC
+  if (state == INITIALIZED)
   {
-    score = 0;
-    // game_won();
+    // only happens for one cycle
+    // play start audio
+    response = NONE;
+    Serial.println("waitnig");
+    if (inputs[START_BUTTON])
+    {
+      Serial.println("START GAME");
+      state = INTERMEDIATE;
+    }
   }
-  if (credit >= 1000)
+  else
   {
-    credit = 0;
-    // game_won();
+    Serial.println("ELSE");
   }
-
-  if (is_game_over())
+  // else if (state == INTERMEDIATE)
+  // {
+  //   // only happens for one cycle
+  //   // select the next stage
+  //   // play audio
+  //   // start timer by reseting counter?
+  //   response = NONE;
+  //   state = choose_next_action();
+  //   counter = get_next_counter_value();
+  // }
+  // else if (state == COIN_IT)
+  // {
+  //   response = coin_it();
+  // }
+  // else if (state == SPIN_IT)
+  // {
+  //   response = spin_it();
+  // }
+  // else if (state == CASH_IT)
+  // {
+  //   response = cash_it();
+  // }
+  // else if (state == SHAKE_IT)
+  // {
+  //   response = shake_it();
+  // }
+  // else if (state == GAME_OVER)
+  // {
+  //   // stall state until get start button input
+  //   if (is_start_game())
+  //   {
+  //     // start button hit
+  //     state = INITIALIZED;
+  //   }
+  // }
+  // if (response == CORRECT)
+  // {
+  //   // increment score
+  //   // set state to intermediate
+  //   Serial.println("CORRECT");
+  //   state = INTERMEDIATE;
+  // }
+  // else if (response == INCORRECT || counter <= 0)
+  // {
+  //   // decrement score
+  //   // set state to intermediate
+  //   // remove life and check for game over
+  //   Serial.println("INCORRECT");
+  //   state = INTERMEDIATE;
+  //   score -= 1;
+  // }
+  if (state != last_state)
   {
-    Serial.println("GAME OVER!");
+    Serial.print("State changed from ");
+    Serial.print(last_state);
+    Serial.print(" to ");
+    Serial.println(state);
+    last_state = state;
+  }
+  // if none, increment timer/counter
+  // check if alloted time has passed
+  // if not, pass
+  // if so, remove life and check if game over
+  // counter--;
+}
+
+int classify_coin()
+{
+  return 0;
+}
+void spin_reels()
+{
+  int reel0_step = random(500, 3);
+  int reel1_step = random(500, 3);
+  int reel2_step = random(500, 3);
+  for (int i = 0; i < 1000; i++)
+  {
+    stepper0.step();
+    stepper1.step();
+    stepper2.step();
   }
 }
 
 void update_inputs()
 {
   imu.update();
-
   inputs[LIMIT] = limit_switch.detect();
-  inputs[BUTTON] = button.detect();
+  inputs[START_BUTTON] = start_button.detect();
+  inputs[CASH_BUTTON] = cash_button.detect();
   inputs[BIG_BREAK_BEAM] = big_break_beam.detect();
   inputs[SMALL_BREAK_BEAM] = small_break_beam.detect();
   inputs[SHAKE] = imu.is_shaken();
@@ -136,32 +257,37 @@ void log_inputs()
   bool any_inputs_detected = false;
   if (inputs[SHAKE])
   {
-    Serial.print("Shake, ");
+    Serial.println("Shake, ");
     any_inputs_detected = true;
   }
-  if (inputs[BUTTON])
+  if (inputs[CASH_BUTTON])
   {
-    Serial.print("Button, ");
+    Serial.println("Cash Button, ");
+    any_inputs_detected = true;
+  }
+  if (inputs[START_BUTTON])
+  {
+    Serial.println("Start Button, ");
     any_inputs_detected = true;
   }
   if (inputs[LIMIT])
   {
-    Serial.print("Limit, ");
+    Serial.println("Limit, ");
     any_inputs_detected = true;
   }
   if (inputs[BIG_BREAK_BEAM])
   {
-    Serial.print("Big BB, ");
+    Serial.println("Big BB, ");
     any_inputs_detected = true;
   }
   if (inputs[SMALL_BREAK_BEAM])
   {
-    Serial.print("Small BB, ");
+    Serial.println("Small BB, ");
     any_inputs_detected = true;
   }
   if (!any_inputs_detected)
   {
-    Serial.print("No inputs detected.");
+    Serial.println("No inputs detected.");
   }
   Serial.println("");
 }
@@ -180,14 +306,14 @@ void IRAM_ATTR onTimer()
 
   if (current_multiplexed_digit == 0)
   {
-    shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay0[credit_ones_digit]);
     shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay0[credit_hundreds_digit]);
+    shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay0[credit_ones_digit]);
     shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay0[scores_ones_digit]);
   }
   else
   {
-    shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay1[credit_tens_digit]);
     shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay1[credit_thousands_digit]);
+    shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay1[credit_tens_digit]);
     shiftOut(DATA_PIN, CLOCK_PIN, LSBFIRST, digitToSegmentsDisplay1[scores_tens_digit]);
   }
 
@@ -222,28 +348,88 @@ void update_credit()
 
 void drop_coin() {}
 void activate_reels() {}
-void is_cash_out_pressed() {}
-void is_coin_inserted() {}
-int determine_coin_value() { return 1; }
 
-void coin_it()
+int determine_coin_value()
+{
+  if (inputs[BIG_BREAK_BEAM])
+  {
+    return 25;
+  }
+  return 5;
+}
+
+bool is_start_game()
+{
+  return inputs[START_BUTTON];
+}
+
+Response coin_it()
 {
   Serial.println("COIN IT");
+  if (inputs[BIG_BREAK_BEAM] || inputs[SMALL_BREAK_BEAM])
+  {
+    // add coin classification + updating credit here
+    return CORRECT;
+  }
+  else if (inputs[CASH_BUTTON] || inputs[LIMIT] || inputs[SHAKE])
+  {
+    return INCORRECT;
+  }
+  return NONE;
 }
 
-void spin_it()
+Response spin_it()
 {
   Serial.println("SPIN IT");
+  if (inputs[LIMIT])
+  {
+    // reduce credit here
+
+    // fire steppers (end of steppers is when credit is added)
+    return CORRECT;
+  }
+  else if (inputs[CASH_BUTTON] || inputs[SHAKE] || inputs[BIG_BREAK_BEAM] || inputs[SMALL_BREAK_BEAM])
+  {
+    return INCORRECT;
+  }
+  return NONE;
 }
 
-void cash_it()
+Response cash_it()
 {
   Serial.println("CASH IT");
+  if (inputs[CASH_BUTTON])
+  {
+    // reduce credit here
+    // fire servo
+    return CORRECT;
+  }
+  else if (inputs[BIG_BREAK_BEAM] || inputs[SMALL_BREAK_BEAM] || inputs[LIMIT] || inputs[SHAKE])
+  {
+    return INCORRECT;
+  }
+  return NONE;
+}
+
+Response shake_it()
+{
+  Serial.println("SHAKE IT");
+  if (inputs[SHAKE])
+  {
+    // reduce credit here
+    // fire servo
+    return CORRECT;
+  }
+  else if (inputs[BIG_BREAK_BEAM] || inputs[SMALL_BREAK_BEAM] || inputs[LIMIT] || inputs[CASH_BUTTON])
+  {
+    return INCORRECT;
+  }
+  return NONE;
 }
 
 State choose_next_action()
 {
-  int next_action = random(3);
+  int next_action = random(4);
   if (next_action == 0)
   {
     return COIN_IT;
@@ -252,7 +438,11 @@ State choose_next_action()
   {
     return SPIN_IT;
   }
-  return CASH_IT;
+  if (next_action == 2)
+  {
+    return CASH_IT;
+  }
+  return SHAKE_IT;
 }
 
 void audio() {}
