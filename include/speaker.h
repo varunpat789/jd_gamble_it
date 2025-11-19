@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 #include <HardwareSerial.h>
-
+#include <constants.h>
 class Speaker
 {
 private:
@@ -29,8 +29,6 @@ public:
     void play_next();
     void play_previous();
     void set_volume(int _volume);
-
-private:
     void execute_CMD(byte CMD, byte Par1, byte Par2);
 };
 

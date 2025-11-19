@@ -7,73 +7,116 @@ State updateStateMachine(State currentState)
     State nextState = currentState;
     Response response = NONE;
     bool is_game_over;
-    // add incorrect state to play audio?
+
     switch (currentState)
     {
     case INITIALIZED:
         if (inputs[START_BUTTON])
         {
+            // RESTART GAME
             nextState = INTERMEDIATE;
             lives_remaining = 3;
             score = 0;
             credit = 0;
+            action_timeout = INITIAL_ACTION_TIMEOUT;
+            life_0_led.enable();
+            life_1_led.enable();
+            life_2_led.enable();
+
             Serial.println(">>> Transitioning to INTERMEDIATE");
         }
         break;
 
     case INTERMEDIATE:
         nextState = choose_next_action();
+        switch(nextState){
+            case COIN_IT:
+                play_sound(COIN_IT_SOUND);
+                break;
+            case SHAKE_IT:
+                play_sound(SHAKE_IT_SOUND);
+                break;
+            case SPIN_IT:
+                play_sound(SPIN_IT_SOUND);
+                break;
+            case CASH_IT:
+                play_sound(CASH_IT_SOUND);
+                break;
+        }
+        action_start_time = millis(); // Start timer for new action
         Serial.print(">>> Transitioning to ");
         Serial.println(stateToString(nextState));
         break;
 
     case COIN_IT:
         response = coin_it();
+
+        if (response == NONE && (millis() - action_start_time > action_timeout))
+        {
+            response = INCORRECT;
+            Serial.println(">>> TIMEOUT COIN IT");
+        }
+
         switch (response)
         {
         case CORRECT_25:
             score++;
             credit += 25;
+            play_sound(CORRECT_SOUND);
             Serial.println(">>> CORRECT COIN IT (25)");
             nextState = INTERMEDIATE;
+            decrease_action_timeout();
             break;
         case CORRECT_5:
             score++;
             credit += 5;
+            play_sound(CORRECT_SOUND);
             Serial.println(">>> CORRECT COIN IT (5)");
             nextState = INTERMEDIATE;
+            decrease_action_timeout();
             break;
 
         case INCORRECT:
             Serial.println(">>> INCORRECT COIN IT");
-
             is_game_over = remove_life();
+
             if (is_game_over)
             {
+                play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
+                play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
-
             break;
 
         case NONE:
             break;
         }
-
         break;
 
     case SPIN_IT:
         response = spin_it();
+        if (response == NONE && (millis() - action_start_time > action_timeout))
+        {
+            response = INCORRECT;
+            Serial.println(">>> TIMEOUT SPIN IT");
+        }
+
         switch (response)
         {
         case CORRECT:
+            xTaskNotifyGive(stepper_task_handle);
             score++;
+
+            play_sound(CORRECT_SOUND);
             Serial.println(">>> CORRECT SPIN IT");
+
             nextState = INTERMEDIATE;
-            // Remove money to bet
+            decrease_action_timeout();
+
             if (credit >= 5)
             {
                 credit -= 5;
@@ -82,19 +125,21 @@ State updateStateMachine(State currentState)
             {
                 credit = 0;
             }
-            // start process to spin steppers
             break;
 
         case INCORRECT:
-            Serial.println(">>> INCORRECT SPIN IT");
 
+            Serial.println(">>> INCORRECT SPIN IT");
             is_game_over = remove_life();
+
             if (is_game_over)
             {
+                play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
+                play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
 
@@ -107,13 +152,24 @@ State updateStateMachine(State currentState)
 
     case CASH_IT:
         response = cash_it();
+
+        if (response == NONE && (millis() - action_start_time > action_timeout))
+        {
+            response = INCORRECT;
+            Serial.println(">>> TIMEOUT CASH IT");
+        }
+
         switch (response)
         {
         case CORRECT:
             score++;
+
+            play_sound(CORRECT_SOUND);
+
             Serial.println(">>> CORRECT CASH IT");
             nextState = INTERMEDIATE;
-            // Remove money to cash out
+            decrease_action_timeout();
+
             if (credit >= 5)
             {
                 credit -= 5;
@@ -127,14 +183,16 @@ State updateStateMachine(State currentState)
 
         case INCORRECT:
             Serial.println(">>> INCORRECT CASH IT");
-
             is_game_over = remove_life();
+
             if (is_game_over)
             {
+                play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
+                play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
 
@@ -147,28 +205,39 @@ State updateStateMachine(State currentState)
 
     case SHAKE_IT:
         response = shake_it();
+
+        if (response == NONE && (millis() - action_start_time > action_timeout))
+        {
+            response = INCORRECT;
+            Serial.println(">>> TIMEOUT SHAKE IT");
+        }
+
         switch (response)
         {
         case CORRECT:
             score++;
+            play_sound(CORRECT_SOUND);
+
             Serial.println(">>> CORRECT SHAKE IT");
             nextState = INTERMEDIATE;
+            decrease_action_timeout();
+
             break;
 
         case INCORRECT:
             Serial.println(">>> INCORRECT SHAKE IT");
-
             is_game_over = remove_life();
+
             if (is_game_over)
             {
+                play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
+                play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
-
-            break;
 
         case NONE:
             break;
@@ -176,11 +245,24 @@ State updateStateMachine(State currentState)
         break;
 
     case NA:
-        // Do nothing in NA state
         break;
     }
 
     return nextState;
+}
+
+void decrease_action_timeout()
+{
+    if (action_timeout - TIMEOUT_DECREASE >= MIN_ACTION_TIMEOUT)
+    {
+        action_timeout -= TIMEOUT_DECREASE;
+    }
+    else
+    {
+        action_timeout = MIN_ACTION_TIMEOUT;
+    }
+    Serial.print(">>> New timeout: ");
+    Serial.println(action_timeout);
 }
 
 const char *stateToString(State state)
@@ -250,9 +332,6 @@ Response spin_it()
     // Serial.println("SPIN IT");
     if (inputs[LIMIT])
     {
-        // reduce credit here
-
-        // fire steppers (end of steppers is when credit is added)
         return CORRECT;
     }
     else if (inputs[CASH_BUTTON] || inputs[SHAKE] || inputs[BIG_BREAK_BEAM] || inputs[SMALL_BREAK_BEAM])
@@ -317,12 +396,19 @@ bool remove_life()
         Serial.println(">>> GAME OVER, BACK TO INITIALIZED");
         // PLAY GAME OVER AUDIO
         life_0_led.disable();
+        play_sound(GAME_OVER_SOUND);
         return true;
     }
     return false;
 }
 
-void audio()
+void play_sound(Sound sound)
 {
-    // TODO: Implement audio feedback
+    // Map enum to track number (assuming tracks are named 0001.mp3, 0002.mp3, etc.)
+    // and enum values correspond to track numbers (1-8)
+    byte track_number = static_cast<byte>(sound) + 1;
+
+    // Command 0x03 plays a specific track in the root directory
+    speaker.execute_CMD(0x03, 0, track_number);
+    delay(500);
 }

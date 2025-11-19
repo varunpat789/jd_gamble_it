@@ -10,23 +10,12 @@
 #include "servoController.h"
 #include "led.h"
 
-// Utility functions
 void update_inputs();
 void log_inputs();
-
-// Hardware control
-void drop_coin();
-void activate_reels();
-void spin_reels();
-
-// Lever and cash out
-void get_lever_state();
-void is_cash_out_pressed();
-
-// Coin classification
-int classify_coin();
-int get_next_counter_value();
+void spin_reels(void *parameter);
 
 void IRAM_ATTR onTimer();
+
+void audio();
 
 #endif // UTILS_H

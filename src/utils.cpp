@@ -78,64 +78,24 @@ void log_inputs()
         Serial.println("Small BB, ");
         any_inputs_detected = true;
     }
-    // if (!any_inputs_detected)
-    // {
-    //     Serial.print("No inputs detected.");
-    // }
-    // Serial.println("");
 }
 
-void drop_coin()
+void spin_reels(void *parameter)
 {
-    // TODO: Implement coin dropping mechanism
-}
-
-void activate_reels()
-{
-    // TODO: Implement reel activation
-    spin_reels();
-}
-
-void spin_reels()
-{
-    int reel0_step = random(3, 500);
-    int reel1_step = random(3, 500);
-    int reel2_step = random(3, 500);
-
-    for (int i = 0; i < 1000; i++)
+    while (1)
     {
-        stepper0.step();
-        stepper1.step();
-        stepper2.step();
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        Serial.println("SPIN REELS");
+
+        for (int i = 0; i < 1000; i++)
+        {
+            stepper0.step();
+            stepper1.step();
+            stepper2.step();
+            delayMicroseconds(500);
+        }
+
+        Serial.println("DONE SPIN");
     }
-}
-
-void get_lever_state()
-{
-    // TODO: Implement lever state detection
-}
-
-void is_cash_out_pressed()
-{
-    // TODO: Implement cash out button check
-}
-
-int classify_coin()
-{
-    // TODO: Implement coin classification based on break beams
-    if (inputs[BIG_BREAK_BEAM])
-    {
-        return 25; // Quarter
-    }
-    else if (inputs[SMALL_BREAK_BEAM])
-    {
-        return 10; // Dime
-    }
-    return 0;
-}
-
-int get_next_counter_value()
-{
-    // TODO: Implement timer/counter logic
-    return 1000; // Default timeout value
 }

@@ -20,10 +20,16 @@ volatile int inputs[6] = {0, 0, 0, 0, 0, 0};
 volatile int score = 0;
 volatile int credit = 0;
 volatile int counter = 1;
-volatile int event_timer = 1000;
 
-unsigned long action_start_time = 0;
-const unsigned long ACTION_TIMEOUT = 3000;
+// GAME TIMING
+volatile unsigned long action_start_time = 0;
+unsigned long action_timeout = INITIAL_ACTION_TIMEOUT;
+
+// FREE RTOS
+TaskHandle_t stepper_task_handle = NULL;
+TaskHandle_t speaker_task_handle = NULL;
+QueueHandle_t stepper_queue = NULL;
+QueueHandle_t speaker_queue = NULL;
 
 // SPEAKER
 Speaker speaker(SPEAKER_TX, SPEAKER_RX);
@@ -57,12 +63,12 @@ void setup()
 {
   Serial.begin(115200);
 
-  // Setup display pins
+  // display pins
   pinMode(LATCH_PIN, OUTPUT);
   pinMode(CLOCK_PIN, OUTPUT);
   pinMode(DATA_PIN, OUTPUT);
 
-  // Setup timer interrupt for display
+  // timer interrupt for display
   score_timer = timerBegin(0, 80, true);
   timerAttachInterrupt(score_timer, &onTimer, true);
   timerAlarmWrite(score_timer, DISPLAY_INTERVAL, true);
@@ -73,13 +79,24 @@ void setup()
     Serial.println("Failed to connect to imu");
   }
 
+  // xTaskCreatePinnedToCore(
+  //     spin_reels,
+  //     "spin_reels",
+  //     4096,
+  //     NULL,
+  //     1,
+  //     &stepper_task_handle,
+  //     0);
+
   Serial.println("Initialized game");
 
-  // Initialize game state
+  // init game states
   score = 0;
   credit = 0;
   lives_remaining = INIT_LIVES;
   current_state = INITIALIZED;
+
+  play_sound(INITIALIZED_SOUND);
 }
 
 void loop()

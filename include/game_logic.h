@@ -20,13 +20,19 @@ Response spin_it();
 Response cash_it();
 Response shake_it();
 
+void decrease_action_timeout();
+void play_sound(Sound sound);
+
 // Game state modifiers
 bool remove_life();
 State updateStateMachine(State currentState);
 const char *stateToString(State state);
 
-// Audio
-void audio();
+// FREE RTOS
+extern TaskHandle_t stepper_task_handle;
+extern TaskHandle_t speaker_task_handle;
+extern QueueHandle_t stepper_queue;
+extern QueueHandle_t speaker_queue;
 
 // External references to global variables
 extern int lives_remaining;
@@ -36,8 +42,12 @@ extern volatile Response response;
 extern volatile int inputs[6];
 extern volatile int score;
 extern volatile int credit;
-extern volatile int counter;
-extern volatile int event_timer;
+
+extern volatile unsigned long action_start_time;
+extern const unsigned long INITIAL_ACTION_TIMEOUT;
+extern const unsigned long TIMEOUT_DECREASE;
+extern const unsigned long MIN_ACTION_TIMEOUT;
+extern unsigned long action_timeout;
 
 // External references to hardware objects
 extern Speaker speaker;
