@@ -96,6 +96,30 @@ void spin_reels(void *parameter)
             delayMicroseconds(500);
         }
 
+        int additionalSteps0 = random(200, 600);
+        int additionalSteps1 = random(200, 600);
+        int additionalSteps2 = random(200, 600);
+
+        int maxSteps = max(max(additionalSteps0, additionalSteps1), additionalSteps2);
+
+        for (int i = 0; i < maxSteps; i++)
+        {
+            if (i < additionalSteps0)
+            {
+                stepper0.step();
+            }
+            if (i < additionalSteps1)
+            {
+                stepper1.step();
+            }
+            if (i < additionalSteps2)
+            {
+                stepper2.step();
+            }
+
+            delayMicroseconds(500);
+        }
+
         Serial.println("DONE SPIN");
     }
 }

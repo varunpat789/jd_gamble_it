@@ -79,14 +79,14 @@ void setup()
     Serial.println("Failed to connect to imu");
   }
 
-  // xTaskCreatePinnedToCore(
-  //     spin_reels,
-  //     "spin_reels",
-  //     4096,
-  //     NULL,
-  //     1,
-  //     &stepper_task_handle,
-  //     0);
+  xTaskCreatePinnedToCore(
+      spin_reels,
+      "spin_reels",
+      4096,
+      NULL,
+      1,
+      &stepper_task_handle,
+      0);
 
   Serial.println("Initialized game");
 

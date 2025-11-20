@@ -29,19 +29,20 @@ State updateStateMachine(State currentState)
 
     case INTERMEDIATE:
         nextState = choose_next_action();
-        switch(nextState){
-            case COIN_IT:
-                play_sound(COIN_IT_SOUND);
-                break;
-            case SHAKE_IT:
-                play_sound(SHAKE_IT_SOUND);
-                break;
-            case SPIN_IT:
-                play_sound(SPIN_IT_SOUND);
-                break;
-            case CASH_IT:
-                play_sound(CASH_IT_SOUND);
-                break;
+        switch (nextState)
+        {
+        case COIN_IT:
+            play_sound(COIN_IT_SOUND);
+            break;
+        case SHAKE_IT:
+            play_sound(SHAKE_IT_SOUND);
+            break;
+        case SPIN_IT:
+            play_sound(SPIN_IT_SOUND);
+            break;
+        case CASH_IT:
+            play_sound(CASH_IT_SOUND);
+            break;
         }
         action_start_time = millis(); // Start timer for new action
         Serial.print(">>> Transitioning to ");
@@ -313,7 +314,6 @@ Response coin_it()
     // Serial.println("COIN IT");
     if (inputs[BIG_BREAK_BEAM])
     {
-        // add coin classification + updating credit here
         return CORRECT_25;
     }
     else if (inputs[SMALL_BREAK_BEAM])
@@ -346,8 +346,6 @@ Response cash_it()
     // Serial.println("CASH IT");
     if (inputs[CASH_BUTTON])
     {
-        // reduce credit here
-        // fire servo
         return CORRECT;
     }
     else if (inputs[BIG_BREAK_BEAM] || inputs[SMALL_BREAK_BEAM] || inputs[LIMIT] || inputs[SHAKE])
@@ -362,8 +360,6 @@ Response shake_it()
     // Serial.println("SHAKE IT");
     if (inputs[SHAKE])
     {
-        // reduce credit here
-        // fire servo
         return CORRECT;
     }
     else if (inputs[BIG_BREAK_BEAM] || inputs[SMALL_BREAK_BEAM] || inputs[LIMIT] || inputs[CASH_BUTTON])
@@ -394,9 +390,10 @@ bool remove_life()
         lives_remaining = 0;
         Serial.println("ZERO lives remaining");
         Serial.println(">>> GAME OVER, BACK TO INITIALIZED");
-        // PLAY GAME OVER AUDIO
         life_0_led.disable();
         play_sound(GAME_OVER_SOUND);
+        play_sound(REPLAY);
+
         return true;
     }
     return false;
@@ -404,11 +401,7 @@ bool remove_life()
 
 void play_sound(Sound sound)
 {
-    // Map enum to track number (assuming tracks are named 0001.mp3, 0002.mp3, etc.)
-    // and enum values correspond to track numbers (1-8)
     byte track_number = static_cast<byte>(sound) + 1;
-
-    // Command 0x03 plays a specific track in the root directory
     speaker.execute_CMD(0x03, 0, track_number);
     delay(500);
 }

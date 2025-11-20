@@ -24,8 +24,9 @@ enum Sound
     CASH_IT_SOUND,     // 004.mp3
     SHAKE_IT_SOUND,    // 005.mp3
     GAME_OVER_SOUND,   // 006.mp3
-    CORRECT_SOUND,     // 007.mp3
-    INCORRECT_SOUND    // 008.mp3
+    CORRECT_SOUND,     // 007.mp
+    INCORRECT_SOUND,   // 008.mp3
+    REPLAY             // 009.mp3
 };
 
 enum Response
@@ -50,9 +51,9 @@ enum Inputs
 // GAME SETTINGS
 const int INIT_LIVES = 3;
 const int WIN_SCORE = 99;
-const unsigned long INITIAL_ACTION_TIMEOUT = 3000; // ms
+const unsigned long INITIAL_ACTION_TIMEOUT = 5000; // ms
 const unsigned long TIMEOUT_DECREASE = 100;        // ms
-const unsigned long MIN_ACTION_TIMEOUT = 500;      // ms
+const unsigned long MIN_ACTION_TIMEOUT = 2000;      // ms
 
 // SPEAKER
 const uint8_t SPEAKER_TX = 17; // GPIO17 (TX) -> RX
@@ -61,8 +62,8 @@ const uint8_t SPEAKER_RX = 18; // GPIO18 (RX) -> TX
 // ACCELEROMETER (IMU)
 const uint8_t IMU_SDA_PIN = 8;       // GPIO08 (SDA) -> SDA
 const uint8_t IMU_SCL_PIN = 9;       // GPIO09 (SCL) -> SCL
-const unsigned long IMU_DB = 1000;   // ms
-const double SHAKE_THRESH = 15000.0; // ms
+const unsigned long IMU_DB = 500;   // ms
+const double SHAKE_THRESH = 5000.0; // ms
 
 // BUTTONS & LIMIT SWITCH
 const uint8_t CASH_BUTTON_PIN = 45;  // IO4
