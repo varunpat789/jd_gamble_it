@@ -1,0 +1,68 @@
+#ifndef GAME_LOGIC_H
+#define GAME_LOGIC_H
+
+#include "constants.h"
+#include "imu.h"
+#include "break_beam.h"
+#include "button.h"
+#include "stepper.h"
+#include "speaker.h"
+#include "servoController.h"
+#include "led.h"
+
+// State machine functions
+State execute_states();
+State choose_next_action();
+
+// Game action handlers
+Response coin_it();
+Response spin_it();
+Response cash_it();
+Response shake_it();
+
+void decrease_action_timeout();
+void play_sound(Sound sound);
+
+// Game state modifiers
+bool remove_life();
+State updateStateMachine(State currentState);
+const char *stateToString(State state);
+
+// FREE RTOS
+extern TaskHandle_t stepper_task_handle;
+extern TaskHandle_t speaker_task_handle;
+extern QueueHandle_t stepper_queue;
+extern QueueHandle_t speaker_queue;
+
+// External references to global variables
+extern int lives_remaining;
+extern State current_state;
+extern State prev_state;
+extern volatile Response response;
+extern volatile int inputs[6];
+extern volatile int score;
+extern volatile int credit;
+
+extern volatile unsigned long action_start_time;
+extern const unsigned long INITIAL_ACTION_TIMEOUT;
+extern const unsigned long TIMEOUT_DECREASE;
+extern const unsigned long MIN_ACTION_TIMEOUT;
+extern unsigned long action_timeout;
+
+// External references to hardware objects
+extern Speaker speaker;
+extern IMU imu;
+extern BreakBeam big_break_beam;
+extern BreakBeam small_break_beam;
+extern Button cash_button;
+extern Button start_button;
+extern Button limit_switch;
+extern Stepper stepper0;
+extern Stepper stepper1;
+extern Stepper stepper2;
+extern ServoController servo;
+extern LED life_0_led;
+extern LED life_1_led;
+extern LED life_2_led;
+
+#endif // GAME_LOGIC_H

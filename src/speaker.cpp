@@ -3,7 +3,7 @@
 
 HardwareSerial MP3Serial(2);
 
-Speaker::Speaker(uint8_t _tx_pin, uint8_t _rx_pin) :  tx_pin(_tx_pin), rx_pin(_rx_pin), volume(20)
+Speaker::Speaker(uint8_t _tx_pin, uint8_t _rx_pin) : tx_pin(_tx_pin), rx_pin(_rx_pin), volume(20)
 {
     MP3Serial.begin(9600, SERIAL_8N1, rx_pin, tx_pin);
     delay(1000);

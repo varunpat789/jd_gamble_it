@@ -12,12 +12,28 @@ enum State
     SPIN_IT,
     CASH_IT,
     SHAKE_IT,
-    GAME_OVER
+    GAME_OVER,
+    NA
+};
+
+enum Sound
+{
+    INITIALIZED_SOUND, // 001.mp3
+    COIN_IT_SOUND,     // 002.mp3
+    SPIN_IT_SOUND,     // 003.mp3
+    CASH_IT_SOUND,     // 004.mp3
+    SHAKE_IT_SOUND,    // 005.mp3
+    GAME_OVER_SOUND,   // 006.mp3
+    CORRECT_SOUND,     // 007.mp
+    INCORRECT_SOUND,   // 008.mp3
+    REPLAY             // 009.mp3
 };
 
 enum Response
 {
     CORRECT,
+    CORRECT_25,
+    CORRECT_5,
     INCORRECT,
     NONE
 };
@@ -35,8 +51,9 @@ enum Inputs
 // GAME SETTINGS
 const int INIT_LIVES = 3;
 const int WIN_SCORE = 99;
-// const int MAX_TIME = 
-// const int MIN_TIME = 
+const unsigned long INITIAL_ACTION_TIMEOUT = 5000; // ms
+const unsigned long TIMEOUT_DECREASE = 100;        // ms
+const unsigned long MIN_ACTION_TIMEOUT = 2000;      // ms
 
 // SPEAKER
 const uint8_t SPEAKER_TX = 17; // GPIO17 (TX) -> RX
@@ -45,19 +62,19 @@ const uint8_t SPEAKER_RX = 18; // GPIO18 (RX) -> TX
 // ACCELEROMETER (IMU)
 const uint8_t IMU_SDA_PIN = 8;       // GPIO08 (SDA) -> SDA
 const uint8_t IMU_SCL_PIN = 9;       // GPIO09 (SCL) -> SCL
-const unsigned long IMU_DB = 1000;   // ms
-const double SHAKE_THRESH = 15000.0; // ms
+const unsigned long IMU_DB = 500;   // ms
+const double SHAKE_THRESH = 5000.0; // ms
 
 // BUTTONS & LIMIT SWITCH
-const uint8_t CASH_BUTTON_PIN = 45;   // IO4
+const uint8_t CASH_BUTTON_PIN = 45;  // IO4
 const uint8_t START_BUTTON_PIN = 21; // IO21
 const uint8_t LIMIT_SWITCH_PIN = 47; // IO47
-const unsigned long BUTTON_DB = 500; // ms
+const unsigned long BUTTON_DB = 50;  // ms
 
 // BREAK BEAMS
-const uint8_t BB_0_PIN = 46;     // IO46 -> BB 0
-const uint8_t BB_1_PIN = 15;     // IO15 -> BB 1
-const unsigned long BB_DB = 500; // ms
+const uint8_t BB_0_PIN = 46;    // IO46 -> BB 0
+const uint8_t BB_1_PIN = 15;    // IO15 -> BB 1
+const unsigned long BB_DB = 50; // ms
 
 // STEPPERS
 const uint8_t STEP_0_STEP_PIN = 1;  // IO1 -> Driver A - Step
@@ -72,8 +89,8 @@ const uint8_t SERVO_PWM_PIN = 7; // IO7 -> SERVO (PWM)
 
 // LIFE LEDS
 const uint8_t LIFE_0_PIN = 4; // IO45 -> Life 1
-const uint8_t LIFE_1_PIN = 6;  // IO6 -> Life 2
-const uint8_t LIFE_2_PIN = 5;  // IO5 -> Life 3
+const uint8_t LIFE_1_PIN = 6; // IO6 -> Life 2
+const uint8_t LIFE_2_PIN = 5; // IO5 -> Life 3
 
 // DISPLAY
 const uint8_t LATCH_PIN = 20; // IO20 -> LATCH
