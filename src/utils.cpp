@@ -85,6 +85,16 @@ void spin_reels(void *parameter)
     while (1)
     {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        int credits_changed = random(-25, 26);
+
+        if (credit + credits_changed < 0)
+        {
+            credit = 0;
+        }
+        else
+        {
+            credit += credits_changed;
+        }
 
         Serial.println("SPIN REELS");
 

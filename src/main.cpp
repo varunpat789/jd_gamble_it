@@ -95,7 +95,7 @@ void setup()
   credit = 0;
   lives_remaining = INIT_LIVES;
   current_state = INITIALIZED;
-
+  delay(1000);
   play_sound(INITIALIZED_SOUND);
 }
 
@@ -104,6 +104,6 @@ void loop()
   current_state = updateStateMachine(current_state);
 
   update_inputs();
-  // log_inputs();
+  log_inputs();
   delay(10);
 }

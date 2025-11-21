@@ -28,6 +28,12 @@ State updateStateMachine(State currentState)
         break;
 
     case INTERMEDIATE:
+        if (score >= 99)
+        {
+            delay(1000);
+            play_sound(WIN_SOUND);
+            current_state = WIN;
+        }
         nextState = choose_next_action();
         switch (nextState)
         {
@@ -44,7 +50,7 @@ State updateStateMachine(State currentState)
             play_sound(CASH_IT_SOUND);
             break;
         }
-        action_start_time = millis(); // Start timer for new action
+        action_start_time = millis();
         Serial.print(">>> Transitioning to ");
         Serial.println(stateToString(nextState));
         break;
@@ -83,12 +89,14 @@ State updateStateMachine(State currentState)
 
             if (is_game_over)
             {
-                play_sound(GAME_OVER_SOUND);
+                Serial.println("game over");
+                // play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
-                play_sound(INCORRECT_SOUND);
+                Serial.println("incorrect");
+                // play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
             break;
@@ -135,12 +143,14 @@ State updateStateMachine(State currentState)
 
             if (is_game_over)
             {
-                play_sound(GAME_OVER_SOUND);
+                Serial.println("game over");
+                // play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
-                play_sound(INCORRECT_SOUND);
+                Serial.println("incorrect");
+                // play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
 
@@ -188,15 +198,16 @@ State updateStateMachine(State currentState)
 
             if (is_game_over)
             {
-                play_sound(GAME_OVER_SOUND);
+                Serial.println("game over");
+                // play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
-                play_sound(INCORRECT_SOUND);
+                Serial.println("incorrect");
+                // play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
-
             break;
 
         case NONE:
@@ -231,12 +242,14 @@ State updateStateMachine(State currentState)
 
             if (is_game_over)
             {
-                play_sound(GAME_OVER_SOUND);
+                Serial.println("game over");
+                // play_sound(GAME_OVER_SOUND);
                 nextState = INITIALIZED;
             }
             else
             {
-                play_sound(INCORRECT_SOUND);
+                Serial.println("incorrect");
+                // play_sound(INCORRECT_SOUND);
                 nextState = INTERMEDIATE;
             }
 
@@ -246,6 +259,23 @@ State updateStateMachine(State currentState)
         break;
 
     case NA:
+        break;
+
+    case WIN:
+        if (inputs[START_BUTTON])
+        {
+            // RESTART GAME
+            nextState = INTERMEDIATE;
+            lives_remaining = 3;
+            score = 0;
+            credit = 0;
+            action_timeout = INITIAL_ACTION_TIMEOUT;
+            life_0_led.enable();
+            life_1_led.enable();
+            life_2_led.enable();
+
+            Serial.println(">>> Transitioning to INTERMEDIATE");
+        }
         break;
     }
 
@@ -376,6 +406,9 @@ bool remove_life()
         lives_remaining = 2;
         Serial.println("TWO lives remaining");
         life_2_led.disable();
+        delay(500);
+        play_sound(INCORRECT_SOUND);
+        delay(1000);
         return false;
     }
     else if (lives_remaining == 2)
@@ -383,6 +416,9 @@ bool remove_life()
         lives_remaining = 1;
         Serial.println("ONE lives remaining");
         life_1_led.disable();
+        delay(500);
+        play_sound(INCORRECT_SOUND);
+        delay(1000);
         return false;
     }
     else if (lives_remaining == 1)
@@ -391,7 +427,9 @@ bool remove_life()
         Serial.println("ZERO lives remaining");
         Serial.println(">>> GAME OVER, BACK TO INITIALIZED");
         life_0_led.disable();
+        delay(1000);
         play_sound(GAME_OVER_SOUND);
+        delay(3000);
         play_sound(REPLAY);
 
         return true;
